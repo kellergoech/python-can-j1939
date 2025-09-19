@@ -172,8 +172,10 @@ class Dm1:
         cookie = {'cb': callback,}
         self._ca.add_timer(delta_time=cycletime, callback=self._send, cookie=cookie)
 
-    def stop_send(self, callback):
-        self._ca.remove_timer(callback)
+    def stop_send(self):
+        """Stop cyclic sending of Dm1 message
+        """
+        self._ca.remove_timer(callback=self._send)
 
     @property
     def dtc_dic_list(self):
@@ -234,6 +236,14 @@ class Dm1:
             self._data.append((dtc >> 8) & 0xFF)
             self._data.append((dtc >> 16) & 0xFF)
             self._data.append((dtc >> 24) & 0xFF)
+
+        # no dtcs to report
+        if len(self._data) == 2:
+            self._data.extend([0x00, 0x00, 0x00, 0x00, 0xff, 0xff])
+        # one dtc to report
+        elif len(self._data) == 6:
+            self._data.extend([0xff, 0xff])
+
 
         # Default Priority: 6
         # priority should be 7 when transport protocol is used (SAE J1939-21 requirement)
